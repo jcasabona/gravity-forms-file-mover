@@ -13,8 +13,12 @@ add_action( 'gform_after_submission', 'jc_gf_move_files', 10, 2 );
 
 function jc_gf_move_files( $entry, $form ) {
 	$form_elements = wp_list_pluck( $form['fields'], 'id', 'type' );
+
+	if ( empty( $form_elements['fileupload'] ) ) {
+		return; // If there's not file uploader, we're donzo. 
+	}
+
 	$entry_images = json_decode( $entry[ $form_elements['fileupload'] ] );
-	$attach_ids = array();
 	require_once( ABSPATH . 'wp-admin/includes/image.php' );
 
 	foreach( $entry_images as $img ) {
@@ -41,7 +45,5 @@ function jc_gf_move_files( $entry, $form ) {
 		/// Generate the metadata for the attachment, and update the database record.
 		$attach_data = wp_generate_attachment_metadata( $attach_id, $img_path );
 		wp_update_attachment_metadata( $attach_id, $attach_data );
-
-		$attach_ids[] = $attach_id;
 	}
 }
